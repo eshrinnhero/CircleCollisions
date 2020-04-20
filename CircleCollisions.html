@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<!-- Source: https://www.w3schools.com/html/html5_canvas.asp -->
+
+<!-- Create canvas element in the Web page -->
+<!-- Specify width and height in pixels and optional style attributes -->
+<canvas id="myCanvas" width="800" height="800" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script src="js/Circle.js"></script>
+
+<script>
+
+var previousSystemTimeMs = undefined;
+var circleList = [];
+
+// Create circles each with a random initial velocity.
+var canvas = document.getElementById("myCanvas");
+var maxCircles = 20;
+var radius = canvas.width / 32;
+var maxSpeed = 100;
+generateCircles(maxCircles, radius, canvas.width, canvas.height, maxSpeed);
+
+// Your main script or initialize function kick starts
+// animation by call window.requestAnimationFrame
+// This will cause your onAnimate function to be called.
+window.requestAnimationFrame( onAnimate );
+
+//------------- Declaration of needed functions -------------
+
+function generateCircles(maxCircles, radius, width, height, maxSpeed)
+{
+  var numCircles = 0;
+	var stepSize = 3 * radius;
+	var x = stepSize;
+	var y = stepSize;
+	var reachedEndOfWindow = false;
+	
+	while(!reachedEndOfWindow && numCircles < maxCircles)
+	{
+		x = x + stepSize;
+		if(x > width)
+		{
+			x = stepSize;
+			y = y + stepSize;
+			if(y > height)
+				reachedEndOfWindow = true;
+		}
+		if(!reachedEndOfWindow)
+		{
+			var c = new Circle(x, y, radius);
+			c.setSpeed( maxSpeed*2*(Math.random()-0.5), maxSpeed*2*(Math.random()-0.5));
+			circleList.push(c);
+			numCircles++;
+		}
+	}
+	alert("Created " + numCircles + "!");
+}
+
+function onAnimate(systemTimeMs)
+{
+  // Get access to canvas element object.
+  var canvas = document.getElementById("myCanvas");
+  // Get two-d drawing content that we use to issue drawing commands to the canvas.
+  var ctx = canvas.getContext("2d");
+	
+	// Clear entire canvas rectangle to given solid fill color.
+	ctx.fillStyle = "#ffffff";
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	
+	// Draw all circles in current position.
+	for(var i = 0; i < circleList.length; i++)
+	  circleList[i].draw(ctx);
+	
+	// Update animating circles.
+	var elapsedTimeSec = 0.0;
+	var elapsedTimeMs = 0;
+	if(previousSystemTimeMs != undefined)
+	  elapsedTimeMs = systemTimeMs - previousSystemTimeMs;
+	// Convert elapsed time of this frame from milliseconds to seconds.
+	elapsedTimeSec = elapsedTimeMs / 1000.0;
+	// Current systemTimeMs becomes old time for next frame.
+	previousSystemTimeMs = systemTimeMs;
+	
+	for(var i = 0; i < circleList.length; i++)
+		circleList[i].move(elapsedTimeSec, canvas.width, canvas.height);
+		
+	var numCollisionTests = 0;
+	var numCollisions = 0;
+	
+	// Loops(s) to check if circle i collides with circle j
+
+	
+	
+					// if circle i collides with circle j
+	for (var i = 0; i < circleList.length; i++) {
+		for (var j = 1; j < circleList.length; j++) {
+			if (circleList[i].centerX != circleList[j].centerX) {
+				if (circleList[i].isCollides(circleList[j])) {
+					numCollisionTests++;
+					// increment count of collisions
+					numCollisions++;
+				
+					// undo move of circle i
+					circleList[i].undoMove();
+				
+					// reverse speed of circle i
+					circleList[i].speedX = -circleList[i].speedX;
+					circleList[i].speedY = -circleList[i].speedY;
+				
+					// undo move of circle j
+					circleList[j].undoMove();
+					// reverse speed of circle j
+					circleList[j].speedX = -circleList[j].speedX;
+					circleList[j].speedY = -circleList[j].speedY;
+				}
+			}
+			else {
+				numCollisionTests++;
+			}
+		}
+	}
+
+	
+	console.log(numCollisions + " collisions out of " + numCollisionTests + " tests");
+
+  // Continue playing animation by requesting that the Web browser
+	// call this function again on the next refresh cycle.
+	window.requestAnimationFrame( onAnimate );
+}
+
+</script> 
+
+</body>
+</html>
